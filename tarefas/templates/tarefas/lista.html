@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Minhas tarefas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2563eb;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        button, .acao {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .concluida {
+            color: #15803d;
+            text-decoration: line-through;
+        }
+
+        .pendente {
+            color: #b45309;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 10px;
+        }
+
+        .acoes form {
+            flex: 1;
+        }
+
+        .acoes button {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>TaskFlow</h1>
+    <p>Organize suas atividades acadêmicas em um só lugar.</p>
+
+    <section class="card">
+        <h2>Nova tarefa</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ formulario.as_p }}
+            <button type="submit">Cadastrar tarefa</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Minhas tarefas</h2>
+
+        {% for tarefa in tarefas %}
+            <article>
+                <h3 class="{% if tarefa.concluida %}concluida{% else %}pendente{% endif %}">
+                    {{ tarefa.titulo }}
+                </h3>
+
+                {% if tarefa.descricao %}
+                    <p>{{ tarefa.descricao }}</p>
+                {% endif %}
+
+                {% if tarefa.prazo %}
+                    <p>Prazo: {{ tarefa.prazo|date:"d/m/Y" }}</p>
+                {% endif %}
+
+                <p>
+                    Status:
+                    {% if tarefa.concluida %}
+                        Concluída
+                    {% else %}
+                        Pendente
+                    {% endif %}
+                </p>
+
+                <div class="acoes">
+                    <form method="post" action="{% url 'concluir_tarefa' tarefa.id %}">
+                        {% csrf_token %}
+                        <button type="submit">
+                            {% if tarefa.concluida %}
+                                Reabrir
+                            {% else %}
+                                Concluir
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'excluir_tarefa' tarefa.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Excluir</button>
+                    </form>
+                </div>
+                <hr>
+            </article>
+        {% empty %}
+            <p>Nenhuma tarefa cadastrada. Comece adicionando uma acima!</p>
+        {% endfor %}
+    </section>
+</body>
+</html>
